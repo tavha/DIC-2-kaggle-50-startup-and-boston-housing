@@ -612,17 +612,17 @@ class ProgressionAnalysisPipeline:
             json.dump(model_data_registry, f_json, indent=2)
 
         with open("model_data.js", "w", encoding="utf-8") as f_js:
-            f_js.write("const MODEL_DATA = ")
+            f_js.write("window.MODEL_DATA = ")
             json.dump(model_data_registry, f_js, indent=2)
-            f_js.write(";\n")
+            f_js.write(";\nvar MODEL_DATA = window.MODEL_DATA;\n")
 
         # Also update static/model_data.js if static folder exists
         static_js_path = os.path.join("static", "model_data.js")
         if os.path.exists("static"):
             with open(static_js_path, "w", encoding="utf-8") as f_static_js:
-                f_static_js.write("const MODEL_DATA = ")
+                f_static_js.write("window.MODEL_DATA = ")
                 json.dump(model_data_registry, f_static_js, indent=2)
-                f_static_js.write(";\n")
+                f_static_js.write(";\nvar MODEL_DATA = window.MODEL_DATA;\n")
 
         print("\n[Artifacts Updated]")
         print(" - model_data.json (Flask backend registry)")

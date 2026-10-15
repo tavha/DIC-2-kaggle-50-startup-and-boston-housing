@@ -16,9 +16,13 @@
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   
-  <!-- Model Data JS (Primary & Fallback) -->
+  <!-- Model Data JS (Primary with Conditional Fallback) -->
   <script src="model_data.js"></script>
-  <script src="static/model_data.js"></script>
+  <script>
+    if (typeof window.MODEL_DATA === 'undefined') {
+      document.write('<script src="static/model_data.js"><\/script>');
+    }
+  </script>
 
   <style>
     /* ==========================================================================
@@ -1463,15 +1467,35 @@
 
     // Initialize application on DOM load
     document.addEventListener('DOMContentLoaded', async () => {
-      // If MODEL_DATA is not globally defined by static script, fetch asynchronously
+      // 1. Resolve from global variable if window.MODEL_DATA is missing
+      if (!window.MODEL_DATA && typeof MODEL_DATA !== 'undefined') {
+        window.MODEL_DATA = MODEL_DATA;
+      }
+
+      // 2. If not defined, check if we can fetch static model_data.json first (works on GitHub Pages and local)
       if (!window.MODEL_DATA) {
         try {
-          const resp = await fetch('/api/models');
-          if (resp.ok) {
-            window.MODEL_DATA = await resp.json();
+          const jsonResp = await fetch('model_data.json');
+          if (jsonResp.ok) {
+            window.MODEL_DATA = await jsonResp.json();
           }
         } catch (e) {
-          console.warn('Could not fetch /api/models, waiting for static fallback...', e);
+          // Ignore error and proceed to API fallback if available
+        }
+      }
+
+      // 3. Fallback: only fetch from /api/models if NOT on a static host like GitHub Pages or file:
+      if (!window.MODEL_DATA) {
+        const isStaticHost = window.location.protocol === 'file:' || window.location.hostname.endsWith('github.io');
+        if (!isStaticHost) {
+          try {
+            const resp = await fetch('/api/models');
+            if (resp.ok) {
+              window.MODEL_DATA = await resp.json();
+            }
+          } catch (e) {
+            console.warn('Backend /api/models not available:', e);
+          }
         }
       }
 

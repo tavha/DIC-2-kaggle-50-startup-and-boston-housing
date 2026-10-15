@@ -1,4 +1,4 @@
-const MODEL_DATA = {
+window.MODEL_DATA = {
   "Lasso": [
     {
       "k": 1,
@@ -3710,3 +3710,4 @@ const MODEL_DATA = {
     }
   ]
 };
+var MODEL_DATA = window.MODEL_DATA;
